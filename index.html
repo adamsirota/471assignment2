@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NYPD complaints by precinct</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <h1>NYPD complaints by precinct</h1>
+    <label for="precinct">Incident precinct</label>
+    <select id="precinct" disabled></select>
+    <p id="status" role="status">Loading data…</p>
+    <h2>Unique complaints received per year</h2>
+    <svg id="trend" role="img" aria-label="Complaints by year"></svg>
+    <h2>Allegation outcome distribution</h2>
+    <svg id="outcomes" role="img" aria-label="Allegation outcome percentages"></svg>
+    <p>Counts describe this dataset, not all NYPD activity. A complaint may contain multiple allegations. Outcome percentages use allegation records across all years for the selected precinct; they do not measure fairness or final discipline. 2020 is incomplete.</p>
+    <p>Source: ProPublica civilian complaints dataset, provided with the assignment.</p>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="script.js"></script>
+</body>
+</html>

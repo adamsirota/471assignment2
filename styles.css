@@ -1,0 +1,9 @@
+body { margin: 0; font-family: system-ui, sans-serif; color: #203040; background: #f7f8fa; }
+main { max-width: 850px; margin: auto; padding: 24px; }
+h1 { font-size: 28px; }
+h2 { font-size: 20px; margin-top: 32px; }
+select { font: inherit; padding: 8px; margin-left: 8px; }
+select:focus-visible { outline: 3px solid #286f99; }
+svg { display: block; width: 100%; background: white; border: 1px solid #ddd; }
+svg text { font-family: system-ui, sans-serif; font-size: 13px; }
+p { line-height: 1.6; }
