@@ -1,25 +1,14 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NYPD complaints by precinct</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <main>
-    <h1>NYPD complaints by precinct</h1>
-    <label for="precinct">Incident precinct</label>
-    <select id="precinct" disabled></select>
-    <p id="status" role="status">Loading data…</p>
-    <h2>Unique complaints received per year</h2>
-    <svg id="trend" role="img" aria-label="Complaints by year"></svg>
-    <h2>Allegation outcome distribution</h2>
-    <svg id="outcomes" role="img" aria-label="Allegation outcome percentages"></svg>
-    <p>Counts describe this dataset, not all NYPD activity. A complaint may contain multiple allegations. Outcome percentages use allegation records across all years for the selected precinct; they do not measure fairness or final discipline. 2020 is incomplete.</p>
-    <p>Source: ProPublica civilian complaints dataset, provided with the assignment.</p>
-  </main>
-  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-  <script src="script.js"></script>
-</body>
-</html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>NYPD outcomes</title><link rel="stylesheet" href="styles.css"></head>
+<body><main><h1>NYPD allegation outcomes</h1>
+<label for="start-year">From year</label><select id="start-year" disabled></select>
+<label for="end-year">Through year</label><select id="end-year" disabled></select>
+<p id="status" role="status">Loading…</p>
+<h2>White hat · Outcomes by incident precinct</h2>
+<p>Allegation shares; n = allegation records. Hover or focus bars for complainant demographics.</p><p id="legend"></p>
+<svg id="white-chart" role="img" aria-label="Outcome shares by precinct"></svg><p id="detail" role="status"></p>
+<p>Coverage: fully investigated allegations involving officers serving in June 2020 with at least one substantiated allegation. This is not all NYPD activity. Demographics describe allegation records, not unique people or neighborhood populations. 2020 is incomplete.</p>
+<h2>Black hat · Black precincts are denied accountability</h2>
+<svg id="black-chart" role="img" aria-label="Intentionally misleading selected precinct comparison"></svg>
+<p>Source: <a href="https://projects.propublica.org/nypd-ccrb/">ProPublica NYPD Files</a>, July 2020.</p>
+</main><script src="https://cdn.jsdelivr.net/npm/d3@7"></script><script src="script.js"></script></body></html>
