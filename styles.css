@@ -7,3 +7,10 @@ select:focus-visible { outline: 3px solid #286f99; }
 svg { display: block; width: 100%; background: white; border: 1px solid #ddd; }
 svg text { font-family: system-ui, sans-serif; font-size: 13px; }
 p { line-height: 1.6; }
+.white-panel { height: 420px; overflow: auto; background: white; border: 1px solid #ddd; }
+.white-panel svg { border: 0; }
+#white-axis { position: sticky; top: 0; z-index: 1; background: white; }
+#black-chart { height: 420px; }
+#legend { display: flex; flex-wrap: wrap; gap: 8px; }
+#detail { height: 100px; overflow: auto; font-size: 13px; }
+.white-panel:focus-visible, svg g:focus-visible { outline: 3px solid #286f99; outline-offset: -3px; }

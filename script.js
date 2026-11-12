@@ -1,26 +1,13 @@
-function summarize(rows) {
-  const yearly = new Map();
-  const outcomes = new Map([
-    ["Substantiated", 0], ["Exonerated", 0], ["Unsubstantiated", 0], ["Other / missing", 0]
-  ]);
-  const races = new Map();
-  for (const row of rows) {
-    const race = (row.complainant_ethnicity || "").trim() || "Missing";
-    races.set(race, (races.get(race) || 0) + 1);
-    const year = Number(row.year_received);
-    if (row.year_received && Number.isInteger(year) && row.complaint_id) {
-      if (!yearly.has(year)) yearly.set(year, new Set());
-      yearly.get(year).add(row.complaint_id);
-    }
-    const disposition = (row.board_disposition || "").trim();
-    const category = disposition.startsWith("Substantiated") ? "Substantiated"
-      : outcomes.has(disposition) ? disposition : "Other / missing";
-    outcomes.set(category, outcomes.get(category) + 1);
-  }
-  return { yearly, outcomes, races };
-}
 const names = ["Substantiated", "Exonerated", "Unsubstantiated", "Other / missing"];
 const colors = ["#28766b", "#477fa8", "#c78b40", "#888888"];
+
+function selectComparison(groups) {
+  const eligible = groups.filter(group => group.count >= 100 && group.precinct !== "Unknown");
+  const rateOrder = (first, second) => first.outcomes[0] / first.count - second.outcomes[0] / second.count;
+  const majority = eligible.filter(group => (group.races.get("Black") || 0) / group.count > 0.5).sort(rateOrder).slice(0, 3);
+  const comparison = eligible.filter(group => (group.races.get("Black") || 0) / group.count <= 0.5).sort((first, second) => rateOrder(second, first)).slice(0, 3);
+  return { majority, comparison };
+}
 
 function summarize(rows) {
   const groups = new Map();
@@ -37,6 +24,14 @@ function summarize(rows) {
   }
   return [...groups.values()].sort((first, second) => first.precinct.localeCompare(second.precinct, undefined, { numeric: true }));
 }
+const selectionCheck = selectComparison([
+  { precinct: "1", count: 100, outcomes: [20], races: new Map([["Black", 60]]) },
+  { precinct: "2", count: 100, outcomes: [40], races: new Map([["Black", 30]]) },
+  { precinct: "3", count: 99, outcomes: [1], races: new Map([["Black", 80]]) }
+]);
+if (selectionCheck.majority.length !== 1 || selectionCheck.majority[0].precinct !== "1"
+    || selectionCheck.comparison.length !== 1 || selectionCheck.comparison[0].precinct !== "2"
+    || selectComparison([]).majority.length !== 0) throw new Error("Comparison selection check failed");
 const check = summarize([{ precinct: "1", board_disposition: "Substantiated (Charges)" }, { precinct: "1" }]);
 if (check[0].count !== 2 || check[0].outcomes[0] !== 1 || check[0].outcomes[3] !== 1 || check[0].races.get("Missing") !== 2) throw new Error("Aggregation check failed");
 
@@ -64,13 +59,14 @@ async function initialize() {
       const through = Number(end.property("value"));
       if (from > through) { status.textContent = "Start year must be at or before end year."; return; }
       const filtered = rows.filter(row => row.year_received.trim() && Number(row.year_received) >= from && Number(row.year_received) <= through);
-      const groups = summarize(filtered);
+      const groups = summarize(filtered).sort((first, second) => second.outcomes[0] / second.count - first.outcomes[0] / first.count);
       status.textContent = from + "–" + through + ": " + filtered.length.toLocaleString() + " allegation records.";
       if (!groups.length) { status.textContent += " No matching records."; return; }
-      const white = d3.select("#white-chart").attr("viewBox", "0 0 850 " + (groups.length * 26 + 60));
+      document.querySelector(".white-panel").scrollTop = 0;
+      const white = d3.select("#white-chart").attr("viewBox", "0 0 850 " + (groups.length * 26 + 20));
       const scale = d3.scaleLinear().domain([0, 1]).range([105, 710]);
-      const positions = d3.scaleBand().domain(groups.map(group => group.precinct)).range([40, groups.length * 26 + 40]).padding(0.2);
-      white.append("g").attr("transform", "translate(0,30)").call(d3.axisTop(scale).ticks(5).tickFormat(d3.format(".0%")));
+      const positions = d3.scaleBand().domain(groups.map(group => group.precinct)).range([0, groups.length * 26]).padding(0.2);
+      d3.select("#white-axis").attr("viewBox", "0 0 850 40").append("g").attr("transform", "translate(0,30)").call(d3.axisTop(scale).ticks(5).tickFormat(d3.format(".0%")));
       white.append("g").attr("transform", "translate(100,0)").call(d3.axisLeft(positions).tickSize(0));
       for (const group of groups) {
         const description = "Precinct " + group.precinct + "; n=" + group.count + ". " + names.map((name, index) => name + ": " + group.outcomes[index] + " (" + d3.format(".1%")(group.outcomes[index] / group.count) + ")").join("; ") + ". Complainant race / ethnicity: " + [...group.races].map(([race, count]) => race + ": " + count + " (" + d3.format(".1%")(count / group.count) + ")").join("; ");
@@ -83,20 +79,25 @@ async function initialize() {
         });
         white.append("text").attr("x", 720).attr("y", positions(group.precinct) + positions.bandwidth() / 2).attr("dominant-baseline", "middle").text("n=" + group.count.toLocaleString());
       }
-      const selected = groups.filter(group => group.count >= 100 && (group.races.get("Black") || 0) / group.count > 0.5).sort((first, second) => first.outcomes[0] / first.count - second.outcomes[0] / second.count).slice(0, 5);
-      const black = d3.select("#black-chart").attr("viewBox", "0 0 850 330");
-      if (!selected.length) { black.append("text").attr("x", 30).attr("y", 50).text("No precincts meet this chart's selection criteria for these years."); return; }
+      const { majority, comparison } = selectComparison(groups);
+      const selected = [...majority, ...comparison];
+      const black = d3.select("#black-chart").attr("viewBox", "0 0 850 420");
+      if (!majority.length || !comparison.length) { black.append("text").attr("x", 30).attr("y", 50).text("Not enough qualifying precincts for this comparison in these years."); return; }
       const rates = selected.map(group => group.outcomes[0] / group.count);
       const horizontal = d3.scaleLinear().domain([Math.max(0, d3.min(rates) - 0.01), d3.max(rates) + 0.02]).range([100, 720]);
-      const vertical = d3.scaleBand().domain(selected.map(group => group.precinct)).range([30, 260]).padding(0.3);
-      black.append("g").attr("transform", "translate(0,270)").call(d3.axisBottom(horizontal).ticks(5).tickFormat(d3.format(".0%")));
+      const vertical = d3.scaleBand().domain(selected.map(group => group.precinct)).range([65, 350]).padding(0.3);
+      black.append("text").attr("x", 100).attr("y", 30).attr("fill", "#a82f32").text("Black precincts");
+      black.append("text").attr("x", 320).attr("y", 30).attr("fill", "#526477").text("Other precincts");
+      black.append("g").attr("transform", "translate(0,360)").call(d3.axisBottom(horizontal).ticks(5).tickFormat(d3.format(".0%")));
       black.append("g").attr("transform", "translate(95,0)").call(d3.axisLeft(vertical).tickSize(0));
       for (const group of selected) {
         const rate = group.outcomes[0] / group.count;
-        black.append("rect").attr("x", 100).attr("y", vertical(group.precinct)).attr("width", horizontal(rate) - 100).attr("height", vertical.bandwidth()).attr("fill", "#a82f32");
+        const label = majority.includes(group) ? "Black precinct" : "Other precinct";
+        black.append("rect").attr("x", 100).attr("y", vertical(group.precinct)).attr("width", horizontal(rate) - 100).attr("height", vertical.bandwidth()).attr("fill", majority.includes(group) ? "#a82f32" : "#526477")
+          .append("title").text(label + " " + group.precinct + ": " + d3.format(".1%")(rate));
         black.append("text").attr("x", horizontal(rate) + 8).attr("y", vertical(group.precinct) + vertical.bandwidth() / 2).attr("dominant-baseline", "middle").text(d3.format(".1%")(rate));
       }
-      black.append("text").attr("x", 290).attr("y", 315).text("Allegations substantiated (%)");
+      black.append("text").attr("x", 290).attr("y", 405).text("Allegations substantiated (%)");
     }
     render();
   } catch (error) { status.textContent = "Unable to load charts: " + error.message + " Use Live Server."; }

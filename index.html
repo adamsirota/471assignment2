@@ -6,7 +6,11 @@
 <p id="status" role="status">Loading…</p>
 <h2>White hat · Outcomes by incident precinct</h2>
 <p>Allegation shares; n = allegation records. Hover or focus bars for complainant demographics.</p><p id="legend"></p>
-<svg id="white-chart" role="img" aria-label="Outcome shares by precinct"></svg><p id="detail" role="status"></p>
+<p>Sorted by substantiation share, highest first. Scroll to see all precincts.</p>
+<div class="white-panel" tabindex="0" role="region" aria-label="Scrollable precinct outcomes">
+<svg id="white-axis" aria-hidden="true"></svg>
+<svg id="white-chart" role="img" aria-label="Outcome shares by precinct"></svg>
+</div><p id="detail" role="status"></p>
 <p>Coverage: fully investigated allegations involving officers serving in June 2020 with at least one substantiated allegation. This is not all NYPD activity. Demographics describe allegation records, not unique people or neighborhood populations. 2020 is incomplete.</p>
 <h2>Black hat · Black precincts are denied accountability</h2>
 <svg id="black-chart" role="img" aria-label="Intentionally misleading selected precinct comparison"></svg>
