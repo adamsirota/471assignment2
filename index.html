@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>NYPD outcomes</title><link rel="stylesheet" href="styles.css"></head>
-<body><main><h1>NYPD allegation outcomes</h1>
+<body><main>
+<h1>NYPD allegation outcomes</h1>
 <label for="start-year">From year</label><select id="start-year" disabled></select>
 <label for="end-year">Through year</label><select id="end-year" disabled></select>
 <p id="status" role="status">Loading…</p>
@@ -16,19 +17,186 @@
 </p>
 <p id="legend"></p>
 <p id="baseline-note"></p>
+<p id="small-note"></p>
 <p>Sorted by substantiation share, highest first. Scroll to see all precincts.</p>
 <div class="white-panel" tabindex="0" role="region" aria-label="Scrollable precinct outcomes">
 <svg id="white-axis" aria-hidden="true"></svg>
 <svg id="white-chart" role="img" aria-label="Outcome shares by precinct"></svg>
 </div><p id="detail" role="status"></p>
 <p>Coverage: fully investigated allegations involving officers serving in June 2020 with at least one substantiated allegation. This is not all NYPD activity. Demographics describe allegation records, not unique people or neighborhood populations. 2020 is incomplete.</p>
+<p class="source">Source: <a href="https://projects.propublica.org/nypd-ccrb/">ProPublica NYPD Files</a>, CCRB data through July 2020.</p>
+<section id="writeup">
+    <h2>Assignment 2 White Hat Writeup</h2>
+    <p class="byline">Adam Sirota, Alex Zheng</p>
+    <h3>Dataset</h3>
+    <p>
+        This visualization uses ProPublica’s NYPD Files, built from Civilian Complaint 
+        Review Board (CCRB) records through July 2020. Each row is one allegation, and 
+        one complaint can contain several (for example, a stop and a search). Each 
+        allegation has its own outcome: substantiated, exonerated, unsubstantiated, or 
+        other/missing. The data covers only fully investigated allegations involving 
+        officers serving in June 2020 who had at least one substantiated allegation. 
+        That means it is not a sample of all NYPD activity, and substantiation rates 
+        here are likely higher than they would be across all officers. Complainant 
+        demographics describe allegation records, not unique people or neighborhood 
+        populations, and 2020 is incomplete.
+    </p>
+    <h3>Design choices</h3>
+    <p>
+        The question is how outcomes differ by precinct, so each precinct gets one 
+        horizontal bar showing the share of its allegations in each outcome. We used a 
+        stacked bar normalized to 100% because the reader is comparing proportions, not 
+        raw volumes. Substantiated sits at the left edge of every bar, so its length can 
+        be compared across precincts against a common baseline. Rows are sorted by 
+        substantiation share, highest first, to make the ranking immediately readable. 
+        Categorical colors are used for the four outcomes, with a legend directly above 
+        the chart.
+    </p>
+    <h3>Data transformations</h3>
+    <p>
+        We aggregated allegations by precinct and computed outcome shares. We also computed 
+        an overall substantiation rate for the selected years, drawn as a dashed line, so 
+        readers can see which precincts sit above or below the dataset-wide figure. Year 
+        menus let readers filter the time window, and every figure recomputes accordingly. 
+        Because shares from small samples swing wildly, precincts with fewer than 30 
+        allegations are faded, marked with an asterisk, and listed last. The count (n) is 
+        shown beside every bar so readers can judge how much weight a percentage deserves.
+    </p>
+    <h3>Clarity and accuracy</h3>
+    <p>
+        The heading is phrased as the question the chart answers. Plain-language 
+        definitions explain each outcome, including that “unsubstantiated” does not 
+        mean the complaint was false. Notes under the chart explain the baseline, the 
+        faded bars, and the dataset’s coverage limits. Hovering or focusing a bar 
+        reveals exact counts and complainant race/ethnicity, and the chart is 
+        keyboard-accessible with ARIA labels. A fixed axis header stays visible while 
+        scrolling through all precincts.
+    </p>
+</section>
+
+
 <h2>Black hat · Complaints are less often substantiated in majority-Black precincts</h2>
 <p id="black-subtitle"></p>
+<p id="black-method" class="source"></p>
 <svg id="black-chart" role="img" aria-label="Intentionally misleading selected precinct comparison"></svg>
-<p class="source">Method: allegations received in 1995-2020 were grouped by the
-precinct where the incident occurred. Precincts with fewer than 100 allegations were excluded to limit
-small-sample noise. A precinct is labeled "Black" when more than half of its allegation records involve a
-Black complainant. Three precincts from each group are shown.</p>
 <p class="source">Source: <a href="https://projects.propublica.org/nypd-ccrb/">ProPublica NYPD Files</a>, CCRB data through July 2020.</p>
 <p class="exercise-note">Black hat exercise: this chart is deliberately misleading, as a class assignment. The write-up below explains how.</p>
+<section id="writeup">
+    <h2>Assignment 2 Black Hat Writeup</h2>
+    <p class="byline">Adam Sirota, Alex Zheng</p>
+    <h3>Claim</h3>
+    <p>
+        The chart appears to show that civilian complaints in majority-Black precincts 
+        are substantiated at lower rates than in other precincts. It uses the same 
+        ProPublica data, with a confident title, a subtitle, a method note, value labels, 
+        a legend, and a source link. All of these make it look rigorous.
+    </p>
+    <h3>Technique 1: Cherry-picked time window</h3>
+    <p>
+        The chart is fixed to [1995–2020] and ignores the year menus. We chose this window 
+        by scanning many start and end years and keeping the one where the gap looked 
+        largest and most consistent. The method note states the window but not that it 
+        was selected for its effect.
+    </p>
+    <h3>Technique 2: Selecting extremes</h3>
+    <p>
+        From the 50 busiest precincts with at least 100 allegations, We took the three 
+        majority-Black precincts with the lowest substantiation rates and the three 
+        other precincts with the highest. Six hand-picked bars stand in for the whole city. 
+        The note says “three precincts from each group are shown” but never says they are 
+        the extremes, so readers assume a representative sample. The dashed overall baseline
+        from the white hat chart is removed, and so are the sample sizes.
+    </p>
+    <h3>Technique 3: Truncated axis</h3>
+    <p>
+        The x-axis starts a little bit below the lowest value instead of zero, so a gap 
+        of a few percentage points looks like a large difference in bar length while still
+        making it seem as if it is mostly trustworthy.
+    </p>
+    <h3>Technique 4: Visual emphasis</h3>
+    <p>
+        The majority-Black precincts get a dark, saturated blue and the others a pale one, 
+        steering attention to one group. The tidy styling and precise percentages add 
+        false authority.
+    </p>
+    <h3>Technique 5: A proxy chosen for its effect</h3>
+    <p>
+        “Black precinct” sounds like a statement about who lives in a neighborhood, but 
+        the chart defines it as a precinct where more than half of allegation records 
+        involve a Black complainant. This is often correlated with neighborhood demographics, 
+        which makes the label feel safe, but it measures who filed complaints, not who 
+        lives there. It also builds part of the outcome into the grouping: if complaints 
+        from Black complainants are substantiated less often overall, precincts selected 
+        for having many of them will show lower rates almost automatically. The underlying 
+        difference is real but smaller, and may reflect socioeconomic or case-level factors 
+        the chart can’t separate. The title presents it as a clean, precinct-level finding.
+    </p>
+    <h3>How it distorts perception</h3>
+    <p>
+        Each technique is defensible alone, but together they produce a clean, 
+        sourced, plausible chart whose conclusion is manufactured by selection. 
+        A reader who checks the axis, asks why only six precincts appear, or 
+        reruns the data with other windows and cutoffs would find the pattern 
+        recedes greatly. The dataset’s coverage bias (only officers with at least one 
+        substantiated allegation) also means any rate here is already skewed.
+    </p>
+</section>
+
+<section id="writeup">
+    <h2>Development Process</h2>
+    <p class="byline">Adam Sirota, Alex Zheng</p>
+    <p>
+        Adam built the first working version. This covered the page structure, the CSV 
+        loading and parsing, and the summarize function that aggregates allegations by 
+        precinct. It also included the year filters, the first white hat chart (stacked 
+        bars by outcome, sorted by substantiation share, with hover and keyboard detail), 
+        and the first black hat comparison chart (selecting the three lowest-rate 
+        majority-Black precincts against the three highest-rate others). The built-in 
+        self-checks that catch aggregation and selection errors came from this stage too.
+        Alex refined and extended both charts. On the white hat side, Alex added the dashed 
+        overall baseline, the faded small-sample rows marked with an asterisk, the sticky 
+        labeled axis header with n and % substantiated columns, plain-language outcome 
+        definitions, and the coverage and bias notes. On the black hat side, Alex reworked 
+        the chart to be more subtle: a fixed time window independent of the year menus, a 
+        pool of the 50 busiest precincts, a softer title, a subtitle and method note, a 
+        legend, and a restyled color scheme and axis. Alex also wrote the write-ups and 
+        documentation.
+    </p>
+    <p>
+        This assignment took about 12 hours combined across the two of us. Polishing took the 
+        most time rather than building. The white hat chart needed many small additions 
+        (baseline, small-n handling, labels, definitions) before it was expressive and 
+        honest about the dataset’s limits. The black hat chart took similar effort in the 
+        opposite direction. It had to be convincing without being obviously rigged, which 
+        meant tuning the title, the selection criteria, the window, the axis, and the 
+        styling until it looked credible. Finding a time window and precinct pool that 
+        produced the desired gap took iteration.
+    </p>
+    <h2>AI Usage</h2>
+    <p>
+        We used generative AI to help write code, debug, and add small finishing touches 
+        to the charts and page. We also used it to help draft and edit the write-ups, 
+        based on our code and design decisions. The design choices, the dataset framing, 
+        the selection of the white hat and black hat approaches, and the review of all 
+        output were ours. We tested the charts ourselves and revised AI suggestions that 
+        didn’t match what we wanted. For extra credit, we used AI as an adversarial reader 
+        for the black hat chart. We fed AI an image of our black hat chart and asked what 
+        it found misleading and changed our chart in response to it.
+    </p>
+    <h2>References</h2>
+    <p>
+        Data: ProPublica, Civilian Complaints Against New York City Police Officers. 
+        This dataset, compiled by ProPublica (an independent, nonprofit investigative 
+        newsroom), contains more than 12,000 civilian complaints filed against the NYPD, 
+        with demographic information about the complainant and officer, the category of 
+        alleged misconduct, and the result of the complaint. We used the CCRB allegations 
+        file through July 2020, also viewable at ProPublica’s NYPD Files.
+    </p>
+    <p>
+        Library: D3.js for all charts
+    </p>
+
+</section>
+
+
 </main><script src="https://cdn.jsdelivr.net/npm/d3@7"></script><script src="script.js"></script></body></html>

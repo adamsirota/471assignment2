@@ -1,14 +1,19 @@
 const names = ["Substantiated", "Exonerated", "Unsubstantiated", "Other / missing"];
 const colors = ["#28766b", "#477fa8", "#c78b40", "#888888"];
 const BLACK_COLORS = { majority: "#1f4e79", other: "#7f9bb6" };
+const MIN_ALLEGATIONS = 30;
 
 // Black hat chart settings. The window and the candidate pool are fixed, so they do not follow the
 // year menus. Pick the window with the console scan, then leave it fixed.
 const BLACK_FROM = 1995;
 const BLACK_TO = 2020;
+const BLACK_BUSIEST = 50; 
 
 function selectComparison(groups) {
-  const eligible = groups.filter(group => group.count >= 100 && group.precinct !== "Unknown");
+  const eligible = groups
+    .filter(group => group.count >= 100 && group.precinct !== "Unknown")
+    .sort((first, second) => second.count - first.count)
+    .slice(0, BLACK_BUSIEST);
   const rateOrder = (first, second) => first.outcomes[0] / first.count - second.outcomes[0] / second.count;
   const majority = eligible.filter(group => (group.races.get("Black") || 0) / group.count > 0.5).sort(rateOrder).slice(0, 3);
   const comparison = eligible.filter(group => (group.races.get("Black") || 0) / group.count <= 0.5).sort((first, second) => rateOrder(second, first)).slice(0, 3);
@@ -42,6 +47,11 @@ function renderBlack(rows) {
   d3.select("#black-subtitle").text(
     "Share of allegations substantiated, " + BLACK_FROM + "–" + BLACK_TO +
     ". Precincts with at least 100 allegations."
+  );
+  d3.select("#black-method").text(
+    "Method: allegations received in " + BLACK_FROM + "–" + BLACK_TO +
+    " were grouped by the precinct where the incident occurred. Precincts with fewer than 100 allegations were excluded to limit small-sample noise, and the " +
+    BLACK_BUSIEST + " busiest remaining precincts were considered. A precinct is labeled \"Black\" when more than half of its allegation records involve a Black complainant. Three precincts from each group are shown."
   );
   if (!majority.length || !comparison.length) {
     black.append("text").attr("x", 30).attr("y", 50).text("Not enough qualifying precincts for this comparison.");
@@ -105,7 +115,9 @@ async function initialize() {
       const through = Number(end.property("value"));
       if (from > through) { status.textContent = "Start year must be at or before end year."; return; }
       const filtered = rows.filter(row => row.year_received.trim() && Number(row.year_received) >= from && Number(row.year_received) <= through);
-      const groups = summarize(filtered).sort((first, second) => second.outcomes[0] / second.count - first.outcomes[0] / first.count);
+      const groups = summarize(filtered).sort((first, second) =>
+        (second.count >= MIN_ALLEGATIONS) - (first.count >= MIN_ALLEGATIONS)
+        || second.outcomes[0] / second.count - first.outcomes[0] / first.count);
       status.textContent = from + "–" + through + ": " + filtered.length.toLocaleString() + " allegation records.";
       if (!groups.length) { status.textContent += " No matching records."; return; }
       document.querySelector(".white-panel").scrollTop = 0;
@@ -119,20 +131,23 @@ async function initialize() {
         .attr("text-anchor", "middle")
         .attr("font-weight", 600)
         .text("Share of the precinct's allegations, by outcome");
-      axisHeader.append("text").attr("x", 95).attr("y", 60).attr("text-anchor", "end").attr("font-weight", 600).text("Precinct");
-      axisHeader.append("text").attr("x", 720).attr("y", 60).attr("font-weight", 600).text("Allegations (n)");
+      axisHeader.append("text").attr("x", 97).attr("y", 60).attr("text-anchor", "end").attr("font-weight", 600).text("Precinct");
+      axisHeader.append("text").attr("x", 730).attr("y", 60).attr("font-weight", 600).text("n");
+      axisHeader.append("text").attr("x", 782).attr("y", 60).attr("font-weight", 600).text("% subst.");
       axisHeader.append("g").attr("transform", "translate(0,56)").call(d3.axisTop(scale).ticks(5).tickFormat(d3.format(".0%")));
       white.append("g").attr("transform", "translate(100,0)").call(d3.axisLeft(positions).tickSize(0));
       for (const group of groups) {
         const description = "Precinct " + group.precinct + "; n=" + group.count + ". " + names.map((name, index) => name + ": " + group.outcomes[index] + " (" + d3.format(".1%")(group.outcomes[index] / group.count) + ")").join("; ") + ". Complainant race / ethnicity: " + [...group.races].map(([race, count]) => race + ": " + count + " (" + d3.format(".1%")(count / group.count) + ")").join("; ");
         const bar = white.append("g").attr("tabindex", 0).attr("role", "img").attr("aria-label", description).on("mouseenter focus", () => { document.querySelector("#detail").textContent = description; });
         bar.append("title").text(description);
+        bar.attr("opacity", group.count >= MIN_ALLEGATIONS ? 1 : 0.45);
         let offset = 0;
         group.outcomes.forEach((count, index) => {
           bar.append("rect").attr("x", scale(offset / group.count)).attr("y", positions(group.precinct)).attr("width", scale(count / group.count) - scale(0)).attr("height", positions.bandwidth()).attr("fill", colors[index]);
           offset += count;
         });
-        white.append("text").attr("x", 720).attr("y", positions(group.precinct) + positions.bandwidth() / 2).attr("dominant-baseline", "middle").text("n=" + group.count.toLocaleString());
+        white.append("text").attr("x", 720).attr("y", positions(group.precinct) + positions.bandwidth() / 2).attr("dominant-baseline", "middle").text("n=" + group.count.toLocaleString() + (group.count < MIN_ALLEGATIONS ? " *" : ""));
+        white.append("text").attr("x", 790).attr("y", positions(group.precinct) + positions.bandwidth() / 2).attr("dominant-baseline", "middle").text(d3.format(".1%")(group.outcomes[0] / group.count));
       }
       const totalAllegations = d3.sum(groups, group => group.count);
       const overall = d3.sum(groups, group => group.outcomes[0]) / totalAllegations;
@@ -149,8 +164,14 @@ async function initialize() {
         .attr("y1", 56).attr("y2", 64);
       d3.select("#baseline-note").text(
         "Dashed line: share of all allegations in this dataset, in the selected years, that were substantiated (" +
-        d3.format(".1%")(overall) + " of " + totalAllegations.toLocaleString() + " allegation records)."
+        d3.format(".1%")(overall) + " of " + totalAllegations.toLocaleString() + " allegation records)." + 
+        " n = allegation records; % subst. = share substantiated"
       );
+      const smallCount = groups.filter(group => group.count < MIN_ALLEGATIONS).length;
+      d3.select("#small-note").text(smallCount
+        ? "Faded bars marked * (" + smallCount + " precincts) have fewer than " + MIN_ALLEGATIONS +
+          " allegations in the selected years, so their percentages can swing widely. They are listed last."
+        : "");
     }
     render();
     renderBlack(rows);

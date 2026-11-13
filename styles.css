@@ -17,3 +17,29 @@ p { line-height: 1.6; }
 #black-subtitle { margin: 0 0 8px; font-size: 14px; color: #44556a; }
 .source { font-size: 12px; color: #667; }
 .exercise-note { font-size: 13px; color: #44556a; font-style: italic; }
+
+#writeup h2 {
+    margin: 0 0 0.25rem;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.5rem;
+    color: var(--ink);
+}
+
+#writeup .byline {
+    margin: 0 0 1.5rem;
+    color: var(--muted);
+}
+
+#writeup h3 {
+    margin: 1.75rem 0 0.5rem;
+    font-size: 1.05rem;
+    color: var(--accent);
+}
+
+#writeup li {
+    margin-bottom: 0.6rem;
+}
+
+#writeup a {
+    color: var(--accent);
+}
