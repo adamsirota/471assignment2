@@ -25,7 +25,7 @@
 </div><p id="detail" role="status"></p>
 <p>Coverage: fully investigated allegations involving officers serving in June 2020 with at least one substantiated allegation. This is not all NYPD activity. Demographics describe allegation records, not unique people or neighborhood populations. 2020 is incomplete.</p>
 <p class="source">Source: <a href="https://projects.propublica.org/nypd-ccrb/">ProPublica NYPD Files</a>, CCRB data through July 2020.</p>
-<section id="writeup">
+<section class="writeup">
     <h2>Assignment 2 White Hat Writeup</h2>
     <p class="byline">Adam Sirota, Alex Zheng</p>
     <h3>Dataset</h3>
@@ -78,10 +78,9 @@
 <h2>Black hat · Complaints are less often substantiated in majority-Black precincts</h2>
 <p id="black-subtitle"></p>
 <p id="black-method" class="source"></p>
-<svg id="black-chart" role="img" aria-label="Intentionally misleading selected precinct comparison"></svg>
+<svg id="black-chart" role="img" aria-label="Substantiation rates for selected precincts."></svg>
 <p class="source">Source: <a href="https://projects.propublica.org/nypd-ccrb/">ProPublica NYPD Files</a>, CCRB data through July 2020.</p>
-<p class="exercise-note">Black hat exercise: this chart is deliberately misleading, as a class assignment. The write-up below explains how.</p>
-<section id="writeup">
+<section class="writeup">
     <h2>Assignment 2 Black Hat Writeup</h2>
     <p class="byline">Adam Sirota, Alex Zheng</p>
     <h3>Claim</h3>
@@ -93,14 +92,14 @@
     </p>
     <h3>Technique 1: Cherry-picked time window</h3>
     <p>
-        The chart is fixed to [1995–2020] and ignores the year menus. We chose this window 
+        The chart is fixed to 1995 – 2020 and ignores the year menus. We chose this window 
         by scanning many start and end years and keeping the one where the gap looked 
         largest and most consistent. The method note states the window but not that it 
         was selected for its effect.
     </p>
     <h3>Technique 2: Selecting extremes</h3>
     <p>
-        From the 50 busiest precincts with at least 100 allegations, We took the three 
+        From the 50 busiest precincts with at least 100 allegations, we took the three 
         majority-Black precincts with the lowest substantiation rates and the three 
         other precincts with the highest. Six hand-picked bars stand in for the whole city. 
         The note says “three precincts from each group are shown” but never says they are 
@@ -142,7 +141,7 @@
     </p>
 </section>
 
-<section id="writeup">
+<section class="writeup">
     <h2>Development Process</h2>
     <p class="byline">Adam Sirota, Alex Zheng</p>
     <p>
