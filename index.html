@@ -4,15 +4,31 @@
 <label for="start-year">From year</label><select id="start-year" disabled></select>
 <label for="end-year">Through year</label><select id="end-year" disabled></select>
 <p id="status" role="status">Loading…</p>
-<h2>White hat · Outcomes by incident precinct</h2>
-<p>Allegation shares; n = allegation records. Hover or focus bars for complainant demographics.</p><p id="legend"></p>
+<h2>White hat · How were allegations against NYPD officers resolved, precinct by precinct?</h2>
+<p>
+    The Civilian Complaint Review Board (CCRB) investigates complaints about NYPD officers. One complaint
+    can contain several allegations (for example, a stop and a search), and each allegation gets its own
+    outcome. Each bar below is one precinct, showing what share of its allegations were
+    <strong>substantiated</strong> (the board found misconduct), <strong>exonerated</strong> (the conduct
+    happened but was found to be within the law and NYPD rules), or <strong>unsubstantiated</strong> (not
+    enough evidence to decide). Unsubstantiated does not mean the complaint was false. Precincts are the
+    place where the incident happened. Hover or focus a bar for counts and complainant demographics.
+</p>
+<p id="legend"></p>
+<p id="baseline-note"></p>
 <p>Sorted by substantiation share, highest first. Scroll to see all precincts.</p>
 <div class="white-panel" tabindex="0" role="region" aria-label="Scrollable precinct outcomes">
 <svg id="white-axis" aria-hidden="true"></svg>
 <svg id="white-chart" role="img" aria-label="Outcome shares by precinct"></svg>
 </div><p id="detail" role="status"></p>
 <p>Coverage: fully investigated allegations involving officers serving in June 2020 with at least one substantiated allegation. This is not all NYPD activity. Demographics describe allegation records, not unique people or neighborhood populations. 2020 is incomplete.</p>
-<h2>Black hat · Black precincts are denied accountability</h2>
+<h2>Black hat · Complaints are less often substantiated in majority-Black precincts</h2>
+<p id="black-subtitle"></p>
 <svg id="black-chart" role="img" aria-label="Intentionally misleading selected precinct comparison"></svg>
-<p>Source: <a href="https://projects.propublica.org/nypd-ccrb/">ProPublica NYPD Files</a>, July 2020.</p>
+<p class="source">Method: allegations received in 1995-2020 were grouped by the
+precinct where the incident occurred. Precincts with fewer than 100 allegations were excluded to limit
+small-sample noise. A precinct is labeled "Black" when more than half of its allegation records involve a
+Black complainant. Three precincts from each group are shown.</p>
+<p class="source">Source: <a href="https://projects.propublica.org/nypd-ccrb/">ProPublica NYPD Files</a>, CCRB data through July 2020.</p>
+<p class="exercise-note">Black hat exercise: this chart is deliberately misleading, as a class assignment. The write-up below explains how.</p>
 </main><script src="https://cdn.jsdelivr.net/npm/d3@7"></script><script src="script.js"></script></body></html>
